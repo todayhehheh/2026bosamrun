@@ -690,8 +690,8 @@ function openMissionDetail(missionId) {
       <div class="photo-submit-row" style="display:flex; flex-direction:column; gap:8px;">
         <div style="display:flex; gap:10px;">
           <label class="btn-primary" style="flex:1; background:#f0f0f8; color:var(--text-primary); text-align:center; padding:12px; border-radius:12px; cursor:pointer;">
-            <input type="file" accept="image/*" capture="environment" id="mission-photo-input" onchange="onMissionPhotoSelected(event)" hidden>
-            📷 사진 선택
+            <input type="file" accept="image/*" id="mission-photo-input" onchange="onMissionPhotoSelected(event)" hidden>
+            📁 사진 선택
           </label>
           <button class="btn-primary blue" id="btn-mission-submit" disabled style="width: 100px; flex-shrink: 0;" onclick="submitMissionPhoto()">제출하기</button>
         </div>
