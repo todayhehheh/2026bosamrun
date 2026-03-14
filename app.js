@@ -3,7 +3,7 @@
    ============================================ */
 
 /** 구글 앱스 스크립트 웹앱 URL */
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0GWJ0-ld_ol0oaa4DXwII13lm3MIkMliycD0bOfpBnHmluacdYpAyJhGUHwiHZ84u8A/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNmqkp394pNPjWoAuL20vGFOArpYoasvfDZYhogK3r9N6RAWoRhSQPTsV6D5uiJ8FYCw/exec';
 
 // =============================================
 // 1. localStorage 유틸리티 함수
@@ -376,6 +376,69 @@ function showBalanceResult() {
   // reflow 트리거 후 애니메이션 재시작
   void card.offsetWidth;
   card.classList.add('fade-in');
+
+  // ★ 밸런스 결과 산출 즉시 구글 시트로 팀 데이터 전체 전송
+  sendTeamInfoToSheet(typeEl.textContent);
+}
+
+/**
+ * 팀 전체 정보(팀명, 인원, 팀원명단, 작성한 답변들, 밸런스 성향)를 모아 구글 시트로 전송 (GAS 호출)
+ * @param {string} resultType 계산된 밸런스 성향(행동파, 계획파 등)
+ * @param {boolean} isManual 수동 전송 여부 (alert 알림용)
+ */
+function sendTeamInfoToSheet(resultType, isManual = false) {
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === '여기에_앱스스크립트_URL을_넣으세요') {
+    if (isManual) alert("구글 앱스 스크립트 URL이 설정되지 않았습니다.");
+    return;
+  }
+
+  const teamName = loadData('teamName') || '미정';
+  const members = loadData('members') || [];
+  const foods = loadData('foods') || {};
+  const superpowers = loadData('superpowers') || {};
+  const money = loadData('money') || {};
+  const stress = loadData('stress') || {};
+
+  const payload = {
+    type: 'teamInfo',
+    teamName: teamName,
+    members: members,
+    resultType: resultType,
+    foods: foods,
+    superpowers: superpowers,
+    money: money,
+    stress: stress
+  };
+
+  if (isManual) {
+    const btn = document.getElementById('btn-sync-sheet');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '전송 중... ⏳';
+    }
+  }
+
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.text())
+  .then(text => {
+    console.log('팀 정보 시트 전송 성공:', text);
+    if (isManual) {
+      alert("✅ 팀 정보가 구글 시트에 성공적으로 저장되었습니다!");
+      const btn = document.getElementById('btn-sync-sheet');
+      if (btn) { btn.disabled = false; btn.textContent = '구글 시트로 팀 데이터 전송 (동기화)'; }
+    }
+  })
+  .catch(err => {
+    console.error('팀 정보 시트 전송 실패:', err);
+    if (isManual) {
+      alert("🚨 전송 실패: 앱스 스크립트 권한 문제이거나 네트워크 오류입니다. 구글 시트 접근 권한을 확인해주세요.");
+      const btn = document.getElementById('btn-sync-sheet');
+      if (btn) { btn.disabled = false; btn.textContent = '다시 전송 시도하기'; }
+    }
+  });
 }
 
 
