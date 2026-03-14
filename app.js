@@ -983,7 +983,7 @@ function renderTeamView() {
   // 팀 사진 배너
   const banner = document.getElementById('team-photo-banner');
   if (photo) {
-    banner.innerHTML = `<img src="${photo}" alt="팀 단체사진">`;
+    banner.innerHTML = `<img src="${photo}" alt="팀 단체사진" style="width:100%; height:100%; object-fit:cover; display:block;">`;
   } else {
     banner.innerHTML = `<div class="team-photo-placeholder">📸 팀 사진</div>`;
   }
@@ -1134,3 +1134,114 @@ document.addEventListener('DOMContentLoaded', function () {
     navigateTo(0);
   }
 });
+
+// =============================================
+// 17. QR 코드 스캐너 로직 (미션 5)
+// =============================================
+let html5QrCode = null;
+
+/**
+ * QR 스캐너 모달 열기
+ * - html5-qrcode 라이브러리 사용
+ * - 후면 카메라 우선 시도, 실패 시 전면 카메라
+ */
+function startQrScanner() {
+  const modal = document.getElementById('qr-scanner-modal');
+  if (!modal) { alert('QR 스캐너 화면이 로드되지 않았습니다.'); return; }
+  modal.style.display = 'flex';
+
+  // 이전 인스턴스 전설 제거
+  const readerEl = document.getElementById('qr-reader');
+  if (readerEl) readerEl.innerHTML = '';
+
+  html5QrCode = new Html5Qrcode('qr-reader');
+
+  const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+  // 후면 카메라 우선
+  html5QrCode.start({ facingMode: 'environment' }, config, onScanSuccess)
+    .catch(() => {
+      // 후면 안되면 전면 카메라 시도
+      html5QrCode.start({ facingMode: 'user' }, config, onScanSuccess)
+        .catch(err => {
+          console.error('카메라 시작 실패:', err);
+          alert('카메라 철근 권한이 필요하거나 기기에서 카메라를 지원하지 않습니다.');
+          closeQrScanner();
+        });
+    });
+}
+
+function onScanSuccess(decodedText) {
+  // 스캔 있어 즈시 중지
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      closeQrScanner();
+      handleQrResult(decodedText);
+    }).catch(err => {
+      console.error('스캐너 정지 오류:', err);
+      closeQrScanner();
+      handleQrResult(decodedText);
+    });
+  }
+}
+
+function closeQrScanner() {
+  const modal = document.getElementById('qr-scanner-modal');
+  if (modal) modal.style.display = 'none';
+
+  if (html5QrCode) {
+    try {
+      if (html5QrCode.isScanning) html5QrCode.stop();
+    } catch(e) {}
+    html5QrCode = null;
+  }
+  // DOM을 초기화하여 다음에 다시 열 수 있게 함
+  const readerEl = document.getElementById('qr-reader');
+  if (readerEl) readerEl.innerHTML = '';
+}
+
+function handleQrResult(text) {
+  const resultModal = document.getElementById('qr-result-modal');
+  const resultMsg = document.getElementById('qr-result-msg');
+  const resultImg = document.getElementById('qr-result-img');
+
+  if (!resultModal || !resultMsg || !resultImg) return;
+
+  if (text === '2026 보쌈런 1') {
+    resultMsg.innerHTML = '<span style="font-size:22px; font-weight:800; color:var(--point-blue);">미션을 클리어했습니다! 🎉</span>';
+    resultImg.src = 'm5_1.png';
+    // 미션 완료 처리
+    const step = loadData('currentMissionStep') || 1;
+    if (currentMissionId === step) {
+      saveData('currentMissionStep', step + 1);
+    }
+    const mission = MISSIONS.find(m => m.id === currentMissionId);
+    if (mission) setTimeout(() => showCongratsPopup(mission), 2000);
+  } else if (text === '2026 보쌈런 2') {
+    resultMsg.innerHTML = '아쉽네요!<br>다른 QR을 찾아보세요. 😅';
+    resultImg.src = 'm5_2.png';
+  } else if (text === '2026 보쌈런 3') {
+    resultMsg.innerHTML = '아쉽네요!<br>다른 QR을 찾아보세요. 😅';
+    resultImg.src = 'm5_3.png';
+  } else if (text === '2026 보쌈런 4') {
+    resultMsg.innerHTML = '아쉽네요!<br>다른 QR을 찾아보세요. 😅';
+    resultImg.src = 'm5_4.png';
+  } else if (text === '2026 보쌈런 5') {
+    resultMsg.innerHTML = '아쉽네요!<br>다른 QR을 찾아보세요. 😅';
+    resultImg.src = 'm5_5.png';
+  } else if (text === '2026 보쌈런 6') {
+    resultMsg.innerHTML = '아쉽네요!<br>다른 QR을 찾아보세요. 😅';
+    resultImg.src = 'm5_6.png';
+  } else {
+    resultMsg.innerHTML = '유효하지 않은 QR 코드입니다.<br>보쌈런 전용 QR을 찾아주세요!';
+    resultImg.src = '';
+  }
+
+  resultModal.style.display = 'flex';
+}
+
+function closeQrResult() {
+  const modal = document.getElementById('qr-result-modal');
+  if (modal) modal.style.display = 'none';
+  renderMissionGrid();
+}

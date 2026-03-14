@@ -79,7 +79,7 @@
       </div>
 
       <!-- 시작하기 버튼 -->
-      <div class="splash-btn-area anim-item anim-delay-4">
+      <div class="splash-btn-area anim-item anim-delay-4" style="margin-bottom: 60px;">
         <button class="btn-primary pink splash-start-btn" onclick="navigateTo(1)">시작하기</button>
       </div>
     </div>
@@ -303,12 +303,12 @@
         <p class="page-subtitle">다 함께 모여 멋진 사진을 촬영하고<br>아래 버튼을 눌러 업로드해주세요.</p>
 
         <label class="photo-upload-area" id="photo-upload-area">
-          <input type="file" accept="image/*" capture="environment" id="team-photo-input"
+          <input type="file" accept="image/*" id="team-photo-input"
             onchange="onPhotoSelected(event)" hidden>
           <div class="photo-placeholder" id="photo-placeholder">
             <span class="photo-icon">📷</span>
             <p class="photo-label">사진 업로드</p>
-            <p class="photo-hint">탭하여 촬영 또는 갤러리에서 선택</p>
+            <p class="photo-hint">탭하여 갤러리 또는 파일에서 선택</p>
           </div>
           <img id="photo-preview" class="photo-preview" src="" alt="팀 사진 미리보기" style="display: none;">
         </label>
@@ -599,7 +599,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 
 </html>
